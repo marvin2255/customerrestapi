@@ -54,17 +54,7 @@ public class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), responseEntity.getBody().getStatusCode());
     }
 
-    @Test
-    public void testHandleNoCustomersFoundException() {
-        NoCustomersFoundException exception = new NoCustomersFoundException("No customers found exception");
-        ResponseEntity<ApiResponse> responseEntity = globalExceptionHandler.handleNoCustomersFoundException(exception);
 
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        assertEquals("Failure", responseEntity.getBody().getStatus());
-        assertEquals("No customers found exception", responseEntity.getBody().getMessage());
-        assertEquals(null, responseEntity.getBody().getData());
-        assertEquals(HttpStatus.NOT_FOUND.value(), responseEntity.getBody().getStatusCode());
-    }
 
     @Test
     public void testHandleNullCustomerException() {

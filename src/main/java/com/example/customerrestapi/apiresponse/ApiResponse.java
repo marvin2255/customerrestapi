@@ -1,5 +1,10 @@
 package com.example.customerrestapi.apiresponse;
 
+import lombok.Getter;
+import lombok.Setter;
+//used lombok  for creating getters and setters
+@Getter
+@Setter
 public class ApiResponse {
 
 	private int statusCode;
@@ -7,36 +12,5 @@ public class ApiResponse {
 	private String message;
 	private Object data;
 
-	public int getStatusCode() {
-		return statusCode;
-	}
 
-	public void setStatusCode(int statusCode) {
-		this.statusCode = statusCode;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	public String getMessage() {
-		return message;
-	}
-
-	public void setMessage(String message) {
-		this.message = message;
-	}
-
-	public Object getData() {
-		return data;
-	}
-
-	public void setData(Object data) {
-		this.data = data;
-	
-}
 }

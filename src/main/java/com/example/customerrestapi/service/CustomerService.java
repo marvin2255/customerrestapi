@@ -2,10 +2,14 @@ package com.example.customerrestapi.service;
 
 import com.example.customerrestapi.model.Customer;
 import com.example.customerrestapi.repository.CustomerRepository;
-import com.example.customerrestapi.validation.CustomerValidator;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+
 import com.example.customerrestapi.exception.*;
 import org.springframework.http.HttpStatus;
 
@@ -15,20 +19,19 @@ import com.example.customerrestapi.apiresponse.ApiResponse;
 import com.example.customerrestapi.exception.DatabaseException;
 import com.example.customerrestapi.exception.NullCustomerException;
 
-
 @Service
-public class CustomerService implements CustomerServiceInterface {
+@Slf4j
+@Validated
+public class CustomerService implements CustomerServiceInterface { 
 
 	@Autowired
 	private CustomerRepository customerRepository;
 
-	CustomerValidator customerValidator = new CustomerValidator();
 	ApiResponse response = new ApiResponse();
-
+	@Validated
 	public ApiResponse saveCustomer(Customer customer) {
-		if (!customerValidator.validate(customer)) {
-			throw new IllegalArgumentException("Invalid customer data");
-		}
+		log.info("Saving a new customer");
+		
 		Customer savedCustomer = customerRepository.save(customer);
 		if (savedCustomer == null) {
 			throw new DatabaseException("Database error: Unable to save customer");
@@ -37,10 +40,13 @@ public class CustomerService implements CustomerServiceInterface {
 		response.setStatus("Success");
 		response.setMessage("Customer with id " + savedCustomer.getId() + " was saved successfully");
 		response.setData(savedCustomer);
-		return response;
-	}
+		log.info("Saved a new customer");
 
+		return response;
+
+	}
 	public ApiResponse getCustomerById(long id) {
+		log.info("Getting customer with id {}", id);
 		Optional<Customer> customer = customerRepository.findById(id);
 		if (!customer.isPresent()) {
 			throw new NullCustomerException("Customer with id " + id + " not found");
@@ -49,11 +55,13 @@ public class CustomerService implements CustomerServiceInterface {
 		response.setMessage("Customer retrieved successfully");
 		response.setData(customer.get());
 		response.setStatusCode(HttpStatus.OK.value());
+		log.info("all customer details with  the id {} is retrived ", id);
 
 		return response;
 	}
 
 	public ApiResponse getAllCustomers() {
+		log.info("Getting all customers");
 		List<Customer> customers = customerRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
 		if (customers.isEmpty()) {
 			throw new NullCustomerException("No customers found");
@@ -62,17 +70,18 @@ public class CustomerService implements CustomerServiceInterface {
 		response.setStatus("Success");
 		response.setMessage("Customers retrieved successfully");
 		response.setData(customers);
+		log.info("Got  all customers ");
+
 		return response;
 	}
-
+	@Validated
 	public ApiResponse updateCustomer(long id, Customer customer) {
-		if (!customerValidator.validate(customer)) {
-			throw new IllegalArgumentException("Invalid customer data");
-		}
+		log.info("Updating customer with id {}", id);
 		Optional<Customer> optionalCustomer = customerRepository.findById(id);
 		if (!optionalCustomer.isPresent()) {
 			throw new CustomerNotFoundException("Customer with id " + id + " not found");
 		}
+		
 		Customer customerToUpdate = optionalCustomer.get();
 		customerToUpdate.setCustomerName(customer.getCustomerName());
 		customerToUpdate.setCustomerAddress(customer.getCustomerAddress());
@@ -87,23 +96,30 @@ public class CustomerService implements CustomerServiceInterface {
 		if (savedCustomer == null) {
 			throw new DatabaseException("Database error: Unable to update customer");
 		}
+		response.setStatus("Success");
 		response.setStatusCode(HttpStatus.OK.value());
 		response.setMessage("Customer with id " + id + " was updated successfully");
 		response.setData(savedCustomer);
+		log.info("Updated  customer with id {} successfully", id);
+
 		return response;
+
 	}
 
-	public ApiResponse deleteCustomer(long id) {
+	public ApiResponse deleteCustomer(long id) {  
+		log.info("Deleting customer with id {}", id);
 		if (!customerRepository.existsById(id)) {
 			throw new NullCustomerException("Customer with id " + id + " not found");
 		}
+		Optional<Customer> deletedCustomer = customerRepository.findById(id);
 		customerRepository.deleteById(id);
-		if (customerRepository.existsById(id)) {
-			throw new DatabaseException("Database error: Unable to delete customer with id " + id);
-		}
-		response.setStatus("Success");
+		response.setStatus("success");
+		response.setMessage("Customer with  id" + id + "is deleted successfully");
 		response.setStatusCode(HttpStatus.NO_CONTENT.value());
-		response.setMessage("Customer with id " + id + " was deleted successfully");
+		response.setData(deletedCustomer);
+
+		log.info("Customer with id {} was deleted successfully", id);
 		return response;
 	}
+
 }

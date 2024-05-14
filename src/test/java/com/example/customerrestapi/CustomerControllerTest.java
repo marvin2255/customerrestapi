@@ -1,37 +1,37 @@
 package com.example.customerrestapi;
+import com.example.customerrestapi.apiresponse.ApiResponse;
+import com.example.customerrestapi.controller.CustomerController;
 import com.example.customerrestapi.model.Customer;
 import com.example.customerrestapi.repository.CustomerRepository;
 import com.example.customerrestapi.service.CustomerService;
-import com.example.customerrestapi.validation.CustomerValidator;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 
 public class CustomerControllerTest {
+	   @InjectMocks
+	    CustomerController customerController;
 
-	@Autowired
-	private MockMvc mockMvc;
-	@Mock
-	private CustomerValidator customerValidator;
+	
+	
 
 	@MockBean
 	private CustomerService customerService;
@@ -53,59 +53,65 @@ public class CustomerControllerTest {
 		testCustomer.setCustomerEmail("john.doe@example.com");
 		testCustomer.setCustomerUserName("johndoe");
 		testCustomer.setCustomerPassword("password123");
-	}
+	} 
 
-	@Test
-	public void testAddCustomer() throws Exception {
-		Customer customer = new Customer(); // construct a valid customer object
-		Mockito.when(customerService.saveCustomer(Mockito.any(Customer.class))).thenReturn(null);
 
-		mockMvc.perform(MockMvcRequestBuilders.post("/addCustomer").content(asJsonString(customer))
-				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
-	}
+    @Test
+    public void testSaveEmployee() {
+        Customer customer = new Customer();
+        ApiResponse apiResponse = new ApiResponse();
+        when(customerService.saveCustomer(customer)).thenReturn(apiResponse);
 
-	@Test
-	public void testGetCustomers() throws Exception {
-		Mockito.when(customerService.getAllCustomers()).thenReturn(null);
+        ResponseEntity<ApiResponse> response = customerController.saveEmployee(customer);
 
-		mockMvc.perform(MockMvcRequestBuilders.get("/viewCustomerAll").accept(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk());
-	}
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        verify(customerService, times(1)).saveCustomer(customer);
+    }
 
-	@Test
-	public void testUpdateCustomer1() throws Exception {
-		long id = 1;
-		Customer customer = new Customer(); // construct a valid customer object
-		Mockito.when(customerService.updateCustomer(Mockito.anyLong(), Mockito.any(Customer.class))).thenReturn(null);
+    @Test
+    public void testGetCustomers() {
+        ApiResponse apiResponse = new ApiResponse();
+        when(customerService.getAllCustomers()).thenReturn(apiResponse);
 
-		mockMvc.perform(MockMvcRequestBuilders.put("/updateCustomer/" + id).content(asJsonString(customer))
-				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
-	}
+        ResponseEntity<ApiResponse> response = customerController.getCustomers();
 
-	@Test
-	public void testDeleteCustomer1() throws Exception {
-		long id = 1;
-		Mockito.when(customerService.deleteCustomer(Mockito.anyLong())).thenReturn(null);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(customerService, times(1)).getAllCustomers();
+    }
+    @Test
+    public void testUpdateCustomer() {
+        long id = 1L;
+        Customer customer = new Customer();
+        ApiResponse apiResponse = new ApiResponse();
+        when(customerService.updateCustomer(id, customer)).thenReturn(apiResponse);
 
-		mockMvc.perform(MockMvcRequestBuilders.delete("/deleteCustomer/" + id).accept(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk());
-	}
+        ResponseEntity<ApiResponse> response = customerController.updateCustomer(id, customer);
 
-	@Test
-	public void testGetCustomerById1() throws Exception {
-		long id = 1;
-		Mockito.when(customerService.getCustomerById(Mockito.anyLong())).thenReturn(null);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(customerService, times(1)).updateCustomer(id, customer);
+    }
 
-		mockMvc.perform(MockMvcRequestBuilders.get("/viewCustomer/" + id).accept(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk());
-	}
+    @Test
+    public void testDeleteEmployee() {
+        long id = 1L;
+        ApiResponse apiResponse = new ApiResponse();
+        when(customerService.deleteCustomer(id)).thenReturn(apiResponse);
 
-	private String asJsonString(final Object obj) {
-		try {
-			return new ObjectMapper().writeValueAsString(obj);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+        ResponseEntity<ApiResponse> response = customerController.deleteEmployee(id);
 
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(customerService, times(1)).deleteCustomer(id);
+    }
+
+    @Test
+    public void testGetCustomerById() {
+        long id = 1L;
+        ApiResponse apiResponse = new ApiResponse();
+        when(customerService.getCustomerById(id)).thenReturn(apiResponse);
+        ResponseEntity<ApiResponse> response = customerController.getCustomerById(id);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(customerService, times(1)).getCustomerById(id);
+    }
+
+  
 }
